@@ -8,9 +8,45 @@ import "./index.scss";
 const client = new QueryClient();
 
 const AppContent = () => {
-  const hello = trpc.useQuery(["hello"]);
+  const [user, setUser] = useState("");
+  const [message, setMessage] = useState("");
 
-  return <div>{JSON.stringify(hello.data)}</div>;
+  const getMessages = trpc.useQuery(["getMessages"]);
+  const addMessage = trpc.useMutation("addMessage");
+  const onAdd = () => {
+    addMessage.mutate(
+      {
+        message,
+        user,
+      },
+      {
+        onSuccess: () => {
+          client.invalidateQueries(["getMessages"]);
+        },
+      }
+    );
+  };
+
+  return (
+    <div className="mt-10 text-3xl mx-auto max-w-6xl">
+      <div>{JSON.stringify(getMessages.data)}</div>
+      <input
+        type="text"
+        value={user}
+        onChange={(e) => setUser(e.target.value)}
+        placeholder="User"
+        className="p-5 border-2 border-gray-300 rounded-lg w-full"
+      />
+      <input
+        type="text"
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        placeholder="Message"
+        className="p-5 border-2 border-gray-300 rounded-lg w-full"
+      />
+      <button onClick={onAdd}>Add message</button>
+    </div>
+  );
 };
 
 const App = () => {
